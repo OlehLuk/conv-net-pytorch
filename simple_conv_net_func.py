@@ -7,7 +7,7 @@ def diff_mse(x, y):
     y_vec = y.view(1, -1).squeeze()
     return torch.mean(torch.pow((x_vec - y_vec), 2)).item()
 
-
+# assumes 1-channel input
 def conv2d_scalar(x_in, conv_weight, conv_bias, device):
     batch_size, _, input_h, input_w = x_in.size()
     n_filters, _, filter_h, filter_w = conv_weight.size()
@@ -66,16 +66,18 @@ def im2col(X, kernel_size, stride, device):
 def conv_weight2rows(conv_weight):
     return conv_weight.view(conv_weight.size()[0], -1)
 
-
+# assumes 1-chanel input
 def pool2d_scalar(a, device):
-    batch_size, channel_n, input_h, input_w = a.size()
-
+    batch_size, _, input_h, input_w = a.size()
+    
     output_h = input_h // 2
     output_w = input_w // 2
 
-    result = torch.empty((batch_size, channel_n, output_h, output_w)).to(device)
+    result = torch.empty((batch_size, 1, output_h, output_w)).to(device)
     result.requires_grad = True
 
+    # channel_n always equals 1 as 1-channel output is expected thus only 1st channel is allocated
+    # tensor is initialized with channel_n though
     for n in range(batch_size):
         for i in range(output_h):
             for j in range(output_w):
